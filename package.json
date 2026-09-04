@@ -1,0 +1,12 @@
+{
+  "name": "kento-raw",
+  "version": "1.0.0",
+  "description": "Kento Raw - コード保存 & Rawリンク生成",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
