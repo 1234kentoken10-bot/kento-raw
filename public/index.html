@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kento Raw</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 750px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 35px;
+            border: 2px solid #ff8c00;
+        }
+        h1 { text-align: center; font-size: 2.5rem; }
+        h1 span { color: #ff8c00; }
+        .sub { text-align: center; color: #666; margin-bottom: 20px; }
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: #0a0a0a;
+            color: #ff8c00;
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus { border-color: #ff8c00; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            margin: 10px 0;
+        }
+        input:focus { border-color: #ff8c00; }
+        button {
+            padding: 14px 30px;
+            background: #ff8c00;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+        button:hover { background: #ffa500; transform: translateY(-2px); }
+        .result-box {
+            background: #0a0a0a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+            border: 1px solid #2a2a2a;
+        }
+        .result-box.show { display: block; }
+        .result-box .url {
+            color: #00cc00;
+            word-break: break-all;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            padding: 10px;
+            background: #000;
+            border-radius: 6px;
+        }
+        .result-box .hint {
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .result-box .hint code {
+            background: #0a0a0a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #ff8c00;
+        }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-group button { flex: 1; padding: 10px; font-size: 14px; }
+        .btn-secondary { background: #2a2a2a; color: #fff; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+            font-size: 14px;
+        }
+        .status.show { display: block; }
+        .status.success { background: #004400; color: #00cc00; border: 1px solid #00aa00; }
+        .status.error { background: #440000; color: #ff4444; border: 1px solid #cc0000; }
+        .list-item {
+            background: #0a0a0a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .list-item .title { color: #ff8c00; font-weight: bold; }
+        .list-item .meta { color: #555; font-size: 12px; }
+        .list-item button {
+            padding: 4px 12px;
+            font-size: 12px;
+            background: #2a2a2a;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+        }
+        .list-item button:first-child { background: #ff8c00; color: #000; }
+        .footer { text-align: center; color: #333; font-size: 12px; margin-top: 25px; }
+        @media (max-width: 600px) { .container { padding: 20px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Kento <span>Raw</span></h1>
+    <p class="sub">⚡ コードを保存してRawリンクを生成</p>
+
+    <input id="titleInput" placeholder="タイトル（任意）" value="Kento Hub スクリプト">
+    <textarea id="codeInput" placeholder="Luaコードを貼り付けてください...">-- Kento Hub スクリプト</textarea>
+
+    <button onclick="saveCode()" style="margin-top:12px;">💾 保存してRawリンクを生成</button>
+
+    <div id="status" class="status"></div>
+
+    <div id="resultBox" class="result-box">
+        <div style="color:#00cc00;font-weight:bold;margin-bottom:8px;">✅ 保存成功！</div>
+        <div class="url" id="resultUrl"></div>
+        <div class="hint">💡 実行: <code>loadstring(game:HttpGet('ここにURL'))()</code></div>
+        <div class="btn-group">
+            <button onclick="copyResult()">📋 コピー</button>
+            <button class="btn-secondary" onclick="clearResult()">✖ 閉じる</button>
+        </div>
+    </div>
+
+    <div style="margin-top:25px;border-top:1px solid #1a1a1a;padding-top:20px;">
+        <h3 style="color:#666;font-size:13px;">📋 保存済みコード</h3>
+        <div id="listContainer"></div>
+    </div>
+
+    <div class="footer">🔥 Kento Raw · データはサーバーに保存</div>
+</div>
+
+<script>
+let currentResult = '';
+
+async function saveCode() {
+    const code = document.getElementById('codeInput').value;
+    const title = document.getElementById('titleInput').value || 'Untitled';
+    const status = document.getElementById('status');
+
+    if (!code.trim()) {
+        status.className = 'status show error';
+        status.textContent = '⚠️ コードを入力してください';
+        return;
+    }
+
+    status.className = 'status show';
+    status.textContent = '⏳ 保存中...';
+
+    try {
+        const res = await fetch('/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, title })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            currentResult = data.url;
+            document.getElementById('resultUrl').textContent = data.url;
+            document.getElementById('resultBox').classList.add('show');
+            status.className = 'status show success';
+            status.textContent = '✅ 保存成功！';
+            loadList();
+        } else {
+            status.className = 'status show error';
+            status.textContent = '❌ ' + data.error;
+        }
+    } catch (e) {
+        status.className = 'status show error';
+        status.textContent = '❌ エラー: ' + e.message;
+    }
+}
+
+async function loadList() {
+    try {
+        const res = await fetch('/list');
+        const data = await res.json();
+        const container = document.getElementById('listContainer');
+        if (data.length === 0) {
+            container.innerHTML = '<div style="color:#555;text-align:center;padding:15px;">📭 まだありません</div>';
+            return;
+        }
+        container.innerHTML = data.map(p => `
+            <div class="list-item">
+                <div>
+                    <div class="title">${escapeHtml(p.title)}</div>
+                    <div class="meta">📅 ${new Date(p.created).toLocaleString()} · 👁️ ${p.views} views</div>
+                </div>
+                <div>
+                    <button onclick="copyLink('${p.id}')">📋</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {}
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function copyLink(id) {
+    const url = window.location.origin + '/raw/' + id;
+    navigator.clipboard.writeText(url);
+    alert('✅ リンクをコピーしました！\n' + url);
+}
+
+function copyResult() {
+    if (currentResult) {
+        navigator.clipboard.writeText(currentResult);
+        alert('✅ コピーしました！');
+    }
+}
+
+function clearResult() {
+    document.getElementById('resultBox').classList.remove('show');
+    currentResult = '';
+}
+
+loadList();
+</script>
+</body>
+</html>
